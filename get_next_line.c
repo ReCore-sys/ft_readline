@@ -6,7 +6,7 @@
 /*   By: kshore <kshore@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 15:37:49 by kshore            #+#    #+#             */
-/*   Updated: 2023/10/16 17:30:11 by kshore           ###   ########.fr       */
+/*   Updated: 2023/10/17 23:15:32 by kshore           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,36 +25,37 @@
 
 char	*get_next_line(int fd)
 {
-	char		*buf;
+	static char	*nl_and_buf;
+	long		i;
+	char		temp[BUFFER_SIZE];
 	char		*line;
-	int			read_bytes;
-	static int	last_nl;
 
-	read_bytes = 0;
-	if (!last_nl)
-		last_nl = 0;
-	line = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
-	buf = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
-	while (1)
+	if (!nl_and_buf)
 	{
-		if (read_bytes >= last_nl)
+		i = sizeof(long);
+		nl_and_buf = malloc(BUFFER_SIZE + sizeof(long));
+		while (read(fd, &temp, BUFFER_SIZE))
 		{
-			if (read_bytes == BUFFER_SIZE)
-				read_bytes = 0;
-			if (read(fd, buf, 1) == -1 || errno == EAGAIN)
-				return (line);
-			if (buf[0] == '\n')
-				break ;
-			line[read_bytes] = *buf;
+			i += BUFFER_SIZE;
+			nl_and_buf = ft_realloc(nl_and_buf, i + BUFFER_SIZE + sizeof(long));
 		}
-		read_bytes++;
+		nl_and_buf = ft_memcpy(&nl_and_buf[sizeof(long) * 2], temp, i);
+		i = 0;
 	}
-	last_nl = read_bytes;
-	line[read_bytes] = '\0';
+	else
+		i = nl_and_buf[0];
+	line = malloc(1);
+	while (nl_and_buf[i] && nl_and_buf[i] != '\n')
+		line = append_and_extend(line, nl_and_buf[i++]);
+	if (nl_and_buf[i] == '\n')
+		line = append_and_extend(line, '\n');
+	nl_and_buf[0] = ++i;
 	return (line);
 }
 
-int		main(void)
+#if do_exe
+
+int	main(void)
 {
 	int		fd;
 
@@ -63,3 +64,5 @@ int		main(void)
 	printf("%s", get_next_line(fd));
 	return (0);
 }
+
+#endif
