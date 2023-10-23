@@ -6,7 +6,7 @@
 /*   By: kshore <kshore@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/16 15:37:49 by kshore            #+#    #+#             */
-/*   Updated: 2023/10/17 23:15:32 by kshore           ###   ########.fr       */
+/*   Updated: 2023/10/23 19:06:12 by kshore           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 
 char	*get_next_line(int fd)
 {
-	static char	*nl_and_buf;
+	static void	*nl_and_buf;
 	long		i;
 	char		temp[BUFFER_SIZE];
 	char		*line;
@@ -43,13 +43,13 @@ char	*get_next_line(int fd)
 		i = 0;
 	}
 	else
-		i = nl_and_buf[0];
+		i = ((long *)nl_and_buf)[0];
 	line = malloc(1);
-	while (nl_and_buf[i] && nl_and_buf[i] != '\n')
-		line = append_and_extend(line, nl_and_buf[i++]);
-	if (nl_and_buf[i] == '\n')
+	while (((long *)nl_and_buf)[i] && ((char *) nl_and_buf)[i] != '\n')
+		line = append_and_extend(line, ((char *)nl_and_buf)[i++]);
+	if (((char *)nl_and_buf)[i] == '\n')
 		line = append_and_extend(line, '\n');
-	nl_and_buf[0] = ++i;
+	((long *)nl_and_buf)[0] = ++i;
 	return (line);
 }
 
